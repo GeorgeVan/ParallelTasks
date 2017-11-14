@@ -27,13 +27,11 @@ public class Example
 
         Console.WriteLine("\r\n\r\n______演示AsyncState__________________");
         Main8();
+*/
         
 
         Console.WriteLine("\r\n\r\n______演示后续任务检查先前任务的Exception__________________");
         Main9();
-*/
-        Console.WriteLine("\r\n\r\n______演示AggregateException.Handle method__________________");
-        Main10();
         Console.ReadKey();
     }
 

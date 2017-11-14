@@ -1,0 +1,18 @@
+﻿<Window x:Class="UIDeadLock.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:UIDeadLock"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="351.58" Width="638.77">
+    <Grid Margin="0,0,12,13.2">
+        <Button x:Name="buttonDeadLock" Content="DeadLock" HorizontalAlignment="Left" Height="22" Margin="34,22,0,0" VerticalAlignment="Top" Width="110" Click="buttonDeadLock_Click"/>
+        <Button x:Name="buttonOK1" Content="OK1" HorizontalAlignment="Left" Height="22" Margin="173,22,0,0" VerticalAlignment="Top" Width="90" Click="buttonOK1_Click"/>
+        <Button x:Name="buttonOK2" Content="OK2" HorizontalAlignment="Left" Height="22" Margin="297,22,0,0" VerticalAlignment="Top" Width="81" Click="buttonOK2_Click"/>
+        <ListBox x:Name="listBoxMsg" HorizontalAlignment="Left" Height="235" Margin="10,66,0,0" VerticalAlignment="Top" Width="589"/>
+        <Button x:Name="buttonOK3" Content="OK3" HorizontalAlignment="Left" Height="22" Margin="407,22,0,0" VerticalAlignment="Top" Width="91" Click="buttonOK3_Click"/>
+        <Button x:Name="buttonClear" Content="Clear" HorizontalAlignment="Left" Margin="535,22,0,0" VerticalAlignment="Top" Width="75" Click="buttonClear_Click"/>
+
+    </Grid>
+</Window>
