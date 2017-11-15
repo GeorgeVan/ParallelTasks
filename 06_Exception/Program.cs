@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -14,8 +16,11 @@ class ExceptionDemo2
         //Main2();
         //Main22();
         //Main10();
-        Main101();
+        //Main101();
         //AsyncVoidExceptions_CannotBeCaughtByCatch();
+        //Main3();
+        Main4();
+        //Main4Sync().Wait();
         Console.ReadKey();
     }
 
@@ -197,7 +202,7 @@ class ExceptionDemo2
                 foreach (var file in files)
                     Console.WriteLine(file);
         }
-        catch (Exception  ex)
+        catch (Exception ex)
         {
             Console.WriteLine("还有其他异常：");
             Console.WriteLine("{0}: {1}", ex.GetType().Name, ex.Message);
@@ -238,7 +243,7 @@ class ExceptionDemo2
     //https://msdn.microsoft.com/en-us/magazine/jj991977.aspx
     private async static void ThrowExceptionAsync()
     {
-        Console.WriteLine(Thread.CurrentThread.ManagedThreadId );
+        Console.WriteLine(Thread.CurrentThread.ManagedThreadId);
         throw new InvalidOperationException();
     }
     public static void AsyncVoidExceptions_CannotBeCaughtByCatch()
@@ -257,7 +262,75 @@ class ExceptionDemo2
         }
     }
 
+    public static void Main3()
+    {
+        Main3Async().Wait();
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+    }
 
 
+    //测试await只抛出第一个异常，Task里面还保存了所有异常（包括第一个）
+    public async static Task Main3Async()
+    {
+        /*
+        var task = Task.WhenAll(from c in "abcdef"
+                                select Task.Run(delegate
+                                {
+                                    Console.WriteLine("Throwing # " + c);
+                                    throw new Exception("George Test " + c);
+                                }));
+        */
+
+        var task = Task.WhenAll("abcdef".Select(c=> Task.Run(delegate
+                                {
+                                    Console.WriteLine("Throwing #" + c);
+                                    throw new Exception("George Test" + c);
+                                })));
+
+
+        try
+        {
+            await task;
+        }
+        catch(Exception ex)
+        {
+            Console.WriteLine("Catched {0}: {1}", ex.GetType().Name, ex.Message);
+        }
+
+       // Console.WriteLine("\r\nTask.Exception contains:\r\n"+
+         //   string.Join(", \r\n", task.Exception.Flatten().InnerExceptions.Select(e => e.Message)));
+    }
+
+    //测试unobservedexception
+    public static void Main4()
+    {
+        Main4Sync().Wait();
+        Thread.Sleep(2000);//让t2结束。
+        Console.WriteLine("StartGC");
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+    }
+    public async static Task Main4Sync()
+    {
+        Task t1= Task.Run(delegate { throw new Exception("aaaaaaaaaaa"); });
+        Task t2= Task.Run(async delegate 
+        {
+            Console.WriteLine("Task2 Stated.");
+            await Task.Delay(1000);
+            Console.WriteLine("Task2 ended.");
+            throw new Exception("bbbbb");
+        });
+        try
+        {
+            await t1;
+            await t2;
+        }
+        catch
+        {
+            Console.WriteLine("catched Ex");
+        }
+        Console.WriteLine("Main4Sync ended");
+    }
 }
 

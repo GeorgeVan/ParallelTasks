@@ -40,20 +40,20 @@ namespace AcmePizza
         private void Window_Loaded(object sender, EventArgs e)
         {
             // launch four threads that mimic various sources
-            Task.Factory.StartNew(() => { OrdererThread(OrderSource.Fax); }, TaskCreationOptions.AttachedToParent);
-            Task.Factory.StartNew(() => { OrdererThread(OrderSource.Internet); }, TaskCreationOptions.AttachedToParent);
-            Task.Factory.StartNew(() => { OrdererThread(OrderSource.Phone); }, TaskCreationOptions.AttachedToParent);
-            Task.Factory.StartNew(() => { OrdererThread(OrderSource.WalkIn); }, TaskCreationOptions.AttachedToParent);
+            Task.Factory.StartNew(async delegate { await OrdererThread(OrderSource.Fax); }, TaskCreationOptions.AttachedToParent);
+            Task.Factory.StartNew(async delegate { await OrdererThread(OrderSource.Internet); }, TaskCreationOptions.AttachedToParent);
+            Task.Factory.StartNew(async delegate { await OrdererThread(OrderSource.Phone); }, TaskCreationOptions.AttachedToParent);
+            Task.Factory.StartNew(async delegate { await OrdererThread(OrderSource.WalkIn); }, TaskCreationOptions.AttachedToParent);
         }
 
-        private void OrdererThread(OrderSource source)
+        private async Task OrdererThread(OrderSource source)
         {
             for ( int i = 0; i < 10; ++i )
             {
                 // submit random order
                 m_orders.TryAdd( GenerateRandomOrder(source));
                 // sleep for a random period
-                Thread.Sleep(m_rand.Next(1000, 4001));
+                await Task.Delay(m_rand.Next(1000, 4001));
             }
         }
 

@@ -5,7 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 
 
-//这里演示了main函数的await缺省会随意使用一个线程
 //https://blogs.msdn.microsoft.com/pfxteam/2012/01/20/await-synchronizationcontext-and-console-apps/
 class Program
 {
@@ -17,6 +16,7 @@ class Program
         Console.ReadKey();
     }
 
+    //这里演示使用自定义的SingleThreadSynchronizationContext让Main的Await使用同一个线程
     static void Main2()
     {
         Console.WriteLine("Main2 @"+Thread.CurrentThread.ManagedThreadId);
@@ -26,7 +26,7 @@ class Program
         });
     }
 
-
+    //这里演示了main函数的await缺省会随意使用一个线程
     static void Main1()
     {
         DemoAsync().Wait();
@@ -68,12 +68,18 @@ public static class AsyncPump
             var t = func(); //开始启动func，func在第一个await的地方返回了
             if (t == null) throw new InvalidOperationException("No task provided.");
 
-            t.ContinueWith(delegate { syncCtx.Complete(); }, TaskScheduler.Default);
-            //制定t在完成做什么
+            t.ContinueWith(delegate 
+            {
+                //只有这个是在另外的线程工作。用于通知await处理线程停止工作。
+                //使用TaskScheduler.Default就是在其他线程启动此任务。
+                syncCtx.Complete();
+            }, TaskScheduler.Default);
+            //如果不Complete，则下面的RunOnCurrentThread就不会返回。
 
             // Pump continuations and propagate any exceptions
             syncCtx.RunOnCurrentThread(); 
             t.GetAwaiter().GetResult();
+            t.Wait();
         }
         finally { SynchronizationContext.SetSynchronizationContext(prevCtx); }
     }
@@ -109,9 +115,11 @@ public static class AsyncPump
             Console.WriteLine("RunOnCurrentThread @" + Thread.CurrentThread.ManagedThreadId);
             foreach (var workItem in m_queue.GetConsumingEnumerable())
             {
+                //如果里面没有东西，就会一直等待。直到有东西或者CompleteAdding。
                 Console.WriteLine("work @"+ Thread.CurrentThread.ManagedThreadId);
                 workItem.Key(workItem.Value);
             }
+            Console.WriteLine("Exit RunOnCurrentThread @" + Thread.CurrentThread.ManagedThreadId);
         }
 
         /// <summary>Notifies the context that no more work will arrive.</summary>

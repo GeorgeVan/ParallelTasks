@@ -3,7 +3,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
-
+using System.Threading;
 using System.Threading.Tasks;
 
 //https://docs.microsoft.com/en-us/dotnet/standard/parallel-programming/how-to-create-pre-computed-tasks
@@ -25,11 +25,14 @@ class CachedDownloads
             return Task.FromResult<string>(content);
         }
 
+        Console.WriteLine("Main @" + Thread.CurrentThread.ManagedThreadId);
         // If the result was not in the cache, download the 
         // string and add it to the cache.
         return Task.Run(async () =>
         {
-            content = await new WebClient().DownloadStringTaskAsync(address);
+            Console.WriteLine("async {@" + Thread.CurrentThread.ManagedThreadId);
+            content = await new WebClient().DownloadStringTaskAsync(address).ConfigureAwait(false);
+            Console.WriteLine("async }@" + Thread.CurrentThread.ManagedThreadId);
             cachedDownloads.TryAdd(address, content);
             return content;
         });
